@@ -15,10 +15,13 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v6
 
-    - name: Login to Container Registry
-      shell: bash
-      run: |
-        echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ secrets.REGISTRY_URL }} -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+    - name: Login to Quay.io
+      uses: docker/login-action@v3
+      with:
+        registry: quay.io
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
 
     - name: Build and Push Image
       shell: bash
