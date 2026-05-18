@@ -5,7 +5,7 @@ on:
     branches: [ "main" ] # Triggers the pipeline on every push to the main branch
 env:
   REGISTRY_URL: quay.io
-  IMAGE_NAME: shrijandra/hello-app
+  IMAGE_NAME: shrijandra/hello-app-singlestage
   
 jobs:
   build-and-push:
@@ -14,18 +14,27 @@ jobs:
 
     - name: Checkout Code
       uses: actions/checkout@v6
+
+    # MANDATORY FOR SINGLE-STAGE: Set up Java and Maven on the runner
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven' # Automatically caches dependencies to speed up future builds
+
+    # MANDATORY FOR SINGLE-STAGE: Build the jar file manually
+    - name: Build with Maven
+      run: mvn clean package -DskipTests
+
     - name: Login to Docker Hub
       shell: bash
-      env:
-        REG_USER: ${{ secrets.REGISTRY_USERNAME }}
-        REG_PASS: ${{ secrets.REGISTRY_PASSWORD }}
-      run: |
-        # Omitting the registry URL defaults directly to Docker Hub
-        echo "$REG_PASS" | docker login -u "$REG_USER" --password-stdin
+      run: echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login -u "${{ secrets.REGISTRY_USERNAME }}" --password-stdin
+
+    # Now Docker can build because target/app.jar exists
     - name: Build and Push Image
       shell: bash
       run: |
-        # Format targets Docker Hub cleanly: xyz/hello-app:latest
         docker build -t ${{ env.IMAGE_NAME }}:latest .
         docker push ${{ env.IMAGE_NAME }}:latest
 
