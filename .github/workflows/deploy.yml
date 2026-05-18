@@ -14,13 +14,13 @@ jobs:
 
     - name: Checkout Code
       uses: actions/checkout@v6
-    - name: Login to Container Registry
+    - name: Login to Docker Hub
       shell: bash
       env:
-        REG_PASS: ${{ secrets.REGISTRY_PASSWORD }}
         REG_USER: ${{ secrets.REGISTRY_USERNAME }}
+        REG_PASS: ${{ secrets.REGISTRY_PASSWORD }}
       run: |
-        # Logs into the root host domain (quay.io)
-        echo "$REG_PASS" | docker login "$REGISTRY_URL" -u "$REG_USER" --password-stdin
+        # Omitting the registry URL defaults directly to Docker Hub
+        echo "$REG_PASS" | docker login -u "$REG_USER" --password-stdin
 
 
