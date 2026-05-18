@@ -4,22 +4,23 @@ on:
   push:
     branches: [ "main" ] # Triggers the pipeline on every push to the main branch
 env:
+  REGISTRY_URL: quay.io
   IMAGE_NAME: shrijandra/hello-app
   
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-
     steps:
 
     - name: Checkout Code
       uses: actions/checkout@v6
-
-    - name: Login to Quay.io
-      uses: docker/login-action@v3
-      with:
-        registry: quay.io/shrijandra
-        username: ${{ secrets.REGISTRY_USERNAME }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
+    - name: Login to Container Registry
+      shell: bash
+      env:
+        REG_PASS: ${{ secrets.REGISTRY_PASSWORD }}
+        REG_USER: ${{ secrets.REGISTRY_USERNAME }}
+      run: |
+        # Logs into the root host domain (quay.io)
+        echo "$REG_PASS" | docker login "$REGISTRY_URL" -u "$REG_USER" --password-stdin
 
 
