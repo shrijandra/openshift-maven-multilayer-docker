@@ -1,0 +1,27 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches: [ "main" ] # Triggers the pipeline on every push to the main branch
+env:
+  IMAGE_NAME: shrijandra/hello-app
+  
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Login to Container Registry
+      shell: bash
+      run: |
+        echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ secrets.REGISTRY_URL }} -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+
+    - name: Build and Push Image
+      shell: bash
+      run: |
+        docker build -t ${{ secrets.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:latest .
+        docker push ${{ secrets.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:latest
